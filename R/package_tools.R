@@ -224,4 +224,30 @@ call_cran <- function(author = "Hollway"){
     dplyr::arrange(SincePub)
 }
 
-
+#' @source https://blog.r-hub.io/2022/09/12/r-dependency/
+#' @export
+find_transitive_minR <- function(package) {
+  
+  db <- tools::CRAN_package_db()
+  
+  recursive_deps <- tools::package_dependencies(
+    package, 
+    recursive = TRUE, 
+    db = db
+  )[[1]]
+  
+  # These code chunks are detailed below in the 'Minimum R dependencies in CRAN 
+  # packages' section
+  r_deps <- db |> 
+    dplyr::filter(Package %in% recursive_deps) |> 
+    # We exclude recommended pkgs as they're always shown as depending on R-devel
+    dplyr::filter(is.na(Priority) | Priority != "recommended") |>  
+    dplyr::pull(Depends) |> 
+    strsplit(split = ",") |> 
+    purrr::map(~ grep("^R ", .x, value = TRUE)) |> 
+    unlist()
+  
+  r_vers <- trimws(gsub("^R \\(>=?\\s(.+)\\)", "\\1", r_deps))
+  
+  return(max(package_version(r_vers)))
+}
