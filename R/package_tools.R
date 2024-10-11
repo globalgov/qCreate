@@ -219,8 +219,13 @@ call_cran <- function(author = "Hollway"){
     dplyr::filter(grepl("Hollway", Author)) |> 
     dplyr::mutate(SincePub = as.Date(lubridate::now()) - 
                     as.Date(Published),
-                  Updateable = SincePub >= 10) |> 
-    dplyr::select(Package, Version, SincePub, Updateable) |> 
+                  Updateable = SincePub >= 10,
+                  When = as.Date(lubridate::now()) + (10 - SincePub),
+                  CanCRAN = paste(lubridate::wday(When, label=TRUE, abbr = FALSE),
+                                  lubridate::day(When),
+                                     lubridate::month(When, label = TRUE, abbr = FALSE),
+                                     lubridate::year(When))) |> 
+    dplyr::select(Package, Version, SincePub, Updateable, CanCRAN) |> 
     dplyr::arrange(SincePub)
 }
 
