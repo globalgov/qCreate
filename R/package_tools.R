@@ -251,3 +251,20 @@ find_transitive_minR <- function(package) {
   
   return(max(package_version(r_vers)))
 }
+
+#' @importFrom rstudioapi navigateToFile
+#' @export
+edit_tutorial <- function(tute){
+  tutes <- list.files("inst/tutorials", recursive = TRUE)
+  tutes <- tutes[grepl(".Rmd$", tutes)]
+  if(grepl("^tut", tute)){
+    opts <- vapply(strsplit(tutes,"/"), `[`, 1, FUN.VALUE=character(1))
+  } else {
+    opts <- vapply(strsplit(tutes,"/"), `[`, 2, FUN.VALUE=character(1))
+  }
+  opt <- tutes[which.min(utils::adist(tute, opts, ignore.case = TRUE,
+                                      costs = list(ins=0, del=1, sub=1)))]
+  pth <- paste0("inst/tutorials/", opt)
+  if(rstudioapi::isAvailable())
+    rstudioapi::navigateToFile(pth)
+}
